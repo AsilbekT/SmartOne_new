@@ -1,5 +1,6 @@
 import json
 from .models import *
+from app.models import News, TextsToTranslate
 
 
 def cartData(request):
@@ -9,13 +10,17 @@ def cartData(request):
         order, created = Order.objects.get_or_create(customer=customer, complete=False)
         items = order.orderitem_set.all()
         cartItems = order.get_cart_items
+        all_news = News.objects.all()
+        products = Product.objects.all()
     else:
+        all_news = News.objects.all()
         cookieData = cookieCart(request)
-        print(cookieData)
         items = cookieData['items']
         order = cookieData['order']
         cartItems = cookieData['cartItems']
-    return {"cartItems": cartItems, 'order': order, 'items': items}
+        products = Product.objects.all()
+
+    return {"cartItems": cartItems, 'order': order, 'items': items, "all_news":all_news, "products": products}
 
 
 def cookieCart(request):
@@ -49,3 +54,16 @@ def cookieCart(request):
         except:
             pass
     return {"cartItems": cartItems, 'order': order, 'items': items}
+
+
+def translate_the_text(lang):
+    textObject = TextsToTranslate.objects.all()
+    text = {}
+    for i in textObject:
+        if lang == 'uz':
+            (text[i.title]) = i.text_uz
+        elif lang == 'ru':
+            text[i.title] = i.text_ru
+        else:
+            text[i.title] = i.text_en
+    return text

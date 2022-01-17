@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 import os
 from pathlib import Path
 from django.utils.translation import gettext_lazy as _
-import pymysql
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -40,11 +40,13 @@ INSTALLED_APPS = [
     'contact.apps.ContactConfig',
     'store.apps.StoreConfig',
     'statistics_page.apps.StatisticsPageConfig',
+    'tinymce',
     'payments',
     'clickuz',
     'PaycomUz',
-    'rest_framework'
-]
+    'rest_framework',
+    'app',
+]   
 
 CLICK_SETTINGS = {
     'service_id': 19552,
@@ -140,7 +142,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
 
 
-LANGUAGE_CODE = 'ru'
+LANGUAGE_CODE = 'uz'
 
 LANGUAGES = (
     ('ru', _('Russian')),
@@ -148,6 +150,7 @@ LANGUAGES = (
     ('en', _('English')),
 
 )
+
 
 TIME_ZONE = 'Asia/Tashkent'
 
@@ -169,7 +172,6 @@ MEDIA_URL = '/media/'
 LOCALE_PATHS = [
     BASE_DIR / 'locale/',
 ]
-
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field

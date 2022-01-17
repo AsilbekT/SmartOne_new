@@ -22,6 +22,10 @@ from django.conf.urls.i18n import i18n_patterns
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/payment/', include('PaycomUz.urls')),
+    path('i18n/', include('django.conf.urls.i18n')),
+    path('tinymce/', include('tinymce.urls')),
+
 ]
 urlpatterns += i18n_patterns(
     path('', include("app.urls")),
@@ -29,6 +33,5 @@ urlpatterns += i18n_patterns(
     path('', include("store.urls")),
     path('', include("products.urls")),
     path('', include("contact.urls")),
-    path('api/payment/', include('PaycomUz.urls')),
     prefix_default_language=False
 ) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

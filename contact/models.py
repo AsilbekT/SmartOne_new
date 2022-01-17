@@ -4,9 +4,10 @@ from django.db import models
 
 
 class FeedBack(models.Model):
-    title = models.CharField(max_length=25, null=True)
+    city = models.CharField(max_length=25, null=True)
     user_name = models.CharField(max_length=25)
     phone_number = models.CharField(max_length=40, null=True)
+    email = models.CharField(max_length=40, null=True)
     text = models.TextField()
 
     def url_dispatcher(self):

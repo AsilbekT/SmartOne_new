@@ -1,26 +1,54 @@
 import json
 import requests
+from django.template.defaulttags import url
+from django.utils import translation
+from django.conf import settings
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse, HttpResponseRedirect
+from django.urls import reverse
+from store.utils import cartData, translate_the_text
 from django.shortcuts import render, redirect
 from contact.models import FeedBack
 from django.contrib.auth.forms import AuthenticationForm
-from .forms import NewUserForm
-# Create your views here.
-
-from django.contrib.auth.forms import UserCreationForm
-from firebase_admin import db
-
-
-# Remember the code we copied from Firebase.
-# This can be copied by clicking on the settings icon > project settings, then scroll down in your firebase dashboard
-
-def index(request):
-    return render(request, "index.html")
+from .forms import FeedBackForm, NewUserForm
+from store.models import Customer, Product, Order, OrderItem, ProductServices
+from .models import Dealers, News
+from django.http import JsonResponse
+from contact.models import FeedBack
 
 
 def service(request):
-    return render(request, "service.html")
+    text = translate_the_text(request.LANGUAGE_CODE)
+    data = cartData(request)
+    cartItems = data['cartItems']
+    dealers = Dealers.objects.all()
+    all_news = News.objects.all()
+    products = Product.objects.all()
+    productService = ProductServices.objects.all()
+    context = {"dealers":dealers,"text":text,"products": products, "productServices": productService, "all_news": all_news, "cartItems": cartItems}
+    return render(request, "new_design/services.html", context)
+
+
+def warranty(request):
+    text = translate_the_text(request.LANGUAGE_CODE)
+    data = cartData(request)
+    cartItems = data['cartItems']
+    all_news = News.objects.all()
+    products = Product.objects.all()
+    productService = ProductServices.objects.all()
+    context = {"text":text,"products": products, "productServices": productService, "all_news": all_news, "cartItems": cartItems}
+    return render(request, "new_design/warranty.html", context)
+
+def payment_delivery(request):
+    text = translate_the_text(request.LANGUAGE_CODE)
+    data = cartData(request)
+    cartItems = data['cartItems']
+    all_news = News.objects.all()
+    products = Product.objects.all()
+    productService = ProductServices.objects.all()
+    context = {"text":text,"products": products, "productServices": productService, "all_news": all_news, "cartItems": cartItems}
+    return render(request, "new_design/payment-delivery.html", context)
 
 
 @login_required(login_url="/accounts/login")
@@ -53,7 +81,14 @@ def message_detail(request, id):
 
 
 def about(request):
-    return render(request, "about.html")
+    text = translate_the_text(request.LANGUAGE_CODE)
+    data = cartData(request)
+    cartItems = data['cartItems']
+    all_news = News.objects.all()
+    products = Product.objects.all()
+    productService = ProductServices.objects.all()
+    context = {"text":text,"products": products, "productServices": productService, "all_news": all_news, "cartItems": cartItems}
+    return render(request, "new_design/about.html", context)
 
 
 def register(request):
@@ -91,3 +126,87 @@ def login_page(request):
 def logout_user(request):
     logout(request)
     return redirect("home")
+
+
+def change_lang(request):
+    LANGUAGE_SESSION_KEY = '_language'
+    if request.user.is_authenticated:
+        if request.method == "POST":
+            sent_url = request.POST['url']
+            old_lang = request.LANGUAGE_CODE
+            changed_lang = request.POST['button']
+            translation.activate(changed_lang)
+            request.session[LANGUAGE_SESSION_KEY] = changed_lang
+            print(request.session[LANGUAGE_SESSION_KEY])
+            # I use HTTP_REFERER to direct them back to previous path 
+            if "en" in sent_url:
+                if changed_lang != 'uz':
+                    new_url = sent_url.replace('en', changed_lang)
+                    return HttpResponseRedirect(new_url)
+                elif changed_lang == 'uz':
+                    new_url1 = sent_url.replace('en', '')
+                    new_url = new_url1[1:]
+                    return HttpResponseRedirect(new_url)
+            elif "ru" in sent_url:
+                if changed_lang != 'uz':
+                    new_url = sent_url.replace('ru', changed_lang)
+                    return HttpResponseRedirect(new_url)
+                elif changed_lang == 'uz':
+                    new_url1 = sent_url.replace('ru', '')
+                    new_url = new_url1[1:]
+                    return HttpResponseRedirect(new_url)
+            elif old_lang == "uz" and changed_lang != 'uz':
+                new_url = f"/{changed_lang}" + sent_url
+
+                return HttpResponseRedirect(new_url)
+            
+            return HttpResponseRedirect(sent_url)
+
+
+def all_news(request):
+    text = translate_the_text(request.LANGUAGE_CODE)
+    data = cartData(request)
+    cartItems = data['cartItems']
+    all_news = News.objects.all()
+    products = Product.objects.all()
+    productService = ProductServices.objects.all()
+    context = {"text":text,"products": products, "productServices": productService, "all_news": all_news, "cartItems": cartItems}
+    return render(request, "new_design/all-news.html", context)
+
+
+def news_detail(request, id):
+    text = translate_the_text(request.LANGUAGE_CODE)
+    data = cartData(request)
+    cartItems = data['cartItems']
+    products = data['products']
+    news = data['all_news']
+    news_detail = News.objects.get(id=id)
+    productService = ProductServices.objects.all()
+    context = {"text":text,"products": products, "productServices": productService, "news_detail": news_detail,
+               "cartItems": cartItems, "all_news": news}
+    return render(request, "new_design/news-data.html", context)
+
+
+def contact(request):
+    text = translate_the_text(request.LANGUAGE_CODE)
+    data = cartData(request)
+    cartItems = data['cartItems']
+    products = Product.objects.all()
+    news = data['all_news']
+    productService = ProductServices.objects.all()
+
+    if request.method == 'POST':
+        form = FeedBackForm(request.POST or None)
+        if len(form.data['city']) > 0:
+            city = form.data['city']
+            feedback = FeedBack.objects.create(city=city)
+            feedback.user_name = form.data['username']
+            feedback.phone_number = form.data['phone']
+            feedback.email = form.data['email']
+            feedback.text = form.data['text']
+            feedback.save()
+    form = FeedBackForm()
+    
+    context = {"form":form,"text":text,"products": products, "productServices": productService, "news_detail": news_detail,
+               "cartItems": cartItems, "all_news": news}
+    return render(request, "new_design/contact.html", context)
