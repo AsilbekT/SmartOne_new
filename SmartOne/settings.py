@@ -50,8 +50,8 @@ INSTALLED_APPS = [
 
 CLICK_SETTINGS = {
     'service_id': 19552,
-    'merchant_id': 14057,
-    'secret_key': "VJQxhIV6fO",
+    'merchant_id': 14111057,
+    'secret_key': "11111",
 
 }
 
